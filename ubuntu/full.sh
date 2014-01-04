@@ -30,6 +30,8 @@ apt-get install -y --force-yes --allow-unauthenticated hadoop hadoop-hdfs libhdf
 apt-get install -y --force-yes --allow-unauthenticated libsnappy1 libsnappy-dev
 apt-get install -y --force-yes --allow-unauthenticated liblzo2-2 liblzo2-dev hadoop-lzo
 
+echo "172.16.45.5 localhost hdpck" > /etc/hosts
+
 #some more prep for HDP
 hdp_config_dir=/vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76
 . $hdp_config_dir/env.sh
@@ -96,6 +98,7 @@ chmod a+rw /usr/lib/hadoop/logs
 
 mkdir /usr/lib/hadoop/hdfsnamedir
 chmod a+rw /usr/lib/hadoop/hdfsnamedir
+chown -R $HDFS_USER:$HADOOP_GROUP /usr/lib/hadoop/hdfsnamedir
 
 #lets getter runnin
 #/usr/lib/hadoop-hdfs/bin/hdfs namenode -format

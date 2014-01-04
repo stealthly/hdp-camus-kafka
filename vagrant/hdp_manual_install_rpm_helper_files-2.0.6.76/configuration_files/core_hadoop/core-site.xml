@@ -73,7 +73,7 @@
   </property>
     <property>
     <name>fs.defaultFS</name>
-    <value>hdfs://172.16.45.5/</value>
+    <value>hdfs://hdpck/</value>
   </property>
     <property>
     <name>mapreduce.jobtracker.webinterface.trusted</name>

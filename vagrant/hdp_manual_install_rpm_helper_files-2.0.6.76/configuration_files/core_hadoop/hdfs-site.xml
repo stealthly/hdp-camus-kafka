@@ -38,7 +38,7 @@
   </property>
     <property>
     <name>dfs.namenode.http-address</name>
-    <value>172.16.45.5:50070</value>
+    <value>hdpck:50070</value>
   </property>
     <property>
     <name>dfs.client.read.shortcircuit.streams.cache.size</name>
@@ -138,7 +138,7 @@
   </property>
     <property>
     <name>dfs.namenode.secondary.http-address</name>
-    <value>172.16.45.5:50090</value>
+    <value>hdpck:50090</value>
   </property>
     <property>
     <name>dfs.permissions.superusergroup</name>
