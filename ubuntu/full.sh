@@ -36,8 +36,15 @@ echo "172.16.45.5 localhost hdpck" > /etc/hosts
 hdp_config_dir=/vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76
 . $hdp_config_dir/env.sh
 
-echo "hdp_config_dir=/vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76" >> ~/.bashrc
-echo ". $hdp_config_dir/env.sh" >> ~/.bashrc
+echo ". /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh" >> ~/.bashrc
+su $HDFS_USER -c "touch ~/.bashrc"
+su $HDFS_USER -c "echo '. /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh' >> ~/.bashrc"
+
+su $YARN_USER -c "touch ~/.bashrc"
+su $YARN_USER -c "echo '. /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh' >> ~/.bashrc"
+
+su $MAPRED_USER -c "touch ~/.bashrc"
+su $MAPRED_USER -c "echo '. /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh' >> ~/.bashrc"
 
 mkdir -p $DFS_NAME_DIR;
 chown -R $HDFS_USER:$HADOOP_GROUP $DFS_NAME_DIR;
@@ -71,6 +78,10 @@ mkdir -p $YARN_LOG_DIR;
 chown -R $YARN_USER:$HADOOP_GROUP $YARN_LOG_DIR;
 chmod -R 755 $YARN_LOG_DIR;
 
+mkdir /usr/lib/hadoop-yarn/logs;
+chown -R $YARN_USER:$HADOOP_GROUP /usr/lib/hadoop-yarn/logs;
+chmod -R 755 /usr/lib/hadoop-yarn/logs;
+
 mkdir -p $HDFS_PID_DIR;
 chown -R $HDFS_USER:$HADOOP_GROUP $HDFS_PID_DIR;
 chmod -R 755 $HDFS_PID_DIR
@@ -87,8 +98,13 @@ mkdir -p $MAPRED_PID_DIR;
 chown -R $MAPRED_USER:$HADOOP_GROUP $MAPRED_PID_DIR;
 chmod -R 755 $MAPRED_PID_DIR;
 
+mkdir -p /usr/lib/hadoop-mapreduce/logs;
+chown -R $MAPRED_USER:$HADOOP_GROUP /usr/lib/hadoop-mapreduce/logs;
+chmod -R 755 /usr/lib/hadoop-mapreduce/logs;
+
 cp -f $hdp_config_dir/configuration_files/core_hadoop/hdfs-site.xml /etc/hadoop/conf/
 cp -f $hdp_config_dir/configuration_files/core_hadoop/core-site.xml /etc/hadoop/conf/
+cp -f $hdp_config_dir/configuration_files/core_hadoop/capacity-scheduler.xml /etc/hadoop/conf/
 
 cd /usr/lib/hadoop-hdfs/
 ln -s /usr/lib/hadoop/libexec libexec
@@ -100,7 +116,27 @@ mkdir /usr/lib/hadoop/hdfsnamedir
 chmod a+rw /usr/lib/hadoop/hdfsnamedir
 chown -R $HDFS_USER:$HADOOP_GROUP /usr/lib/hadoop/hdfsnamedir
 
-#lets getter runnin
-#/usr/lib/hadoop-hdfs/bin/hdfs namenode -format
-#/usr/lib/hadoop/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start namenode
+chown -R root:hadoop /usr/lib/hadoop-yarn/bin/container-executor
+chmod -R 6050 /usr/lib/hadoop-yarn/bin/container-executor
 
+su $HDFS_USER -c "/usr/lib/hadoop/bin/hadoop namenode -format"
+su $HDFS_USER -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start namenode"
+su $HDFS_USER -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start datanode"
+
+su $YARN_USER -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec"
+su $YARN_USER -c "/usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start resourcemanager"
+su $YARN_USER -c "/usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start nodemanager"
+
+su $HDFS_USER -c "hadoop fs -mkdir -p /mr-history/tmp"
+su $HDFS_USER -c "hadoop fs -chmod -R 1777 /mr-history/tmp"
+su $HDFS_USER -c "hadoop fs -mkdir -p /mr-history/done"
+su $HDFS_USER -c "hadoop fs -chmod -R 1777 /mr-history/done"
+su $HDFS_USER -c "hadoop fs -chown -R $MAPRED_USER:$HDFS_USER /mr-history"
+
+su $HDFS_USER -c "hadoop fs -mkdir -p /app-logs"
+su $HDFS_USER -c "hadoop fs -chmod -R 1777 /app-logs "
+su $HDFS_USER -c "hadoop fs -chown yarn /app-logs"
+su $HDFS_USER -c "hadoop fs -chown -R $MAPRED_USER:$HDFS_USER /"
+
+su $MAPRED_USER -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/"
+su $MAPRED_USER -c "/usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver"
