@@ -15,7 +15,7 @@
 
 #!/bin/bash -x
 apt-get update
-apt-get install -y wget vim curl screen git software-properties-common python-software-properties
+apt-get install -y wget vim curl screen git maven software-properties-common python-software-properties
 add-apt-repository -y ppa:webupd8team/java
 apt-get update
 /bin/echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
@@ -36,6 +36,8 @@ echo "172.16.45.5 localhost hdpck" > /etc/hosts
 hdp_config_dir=/vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76
 . $hdp_config_dir/env.sh
 
+export JAVA_HOME=/usr
+
 echo ". /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh" >> ~/.bashrc
 su $HDFS_USER -c "touch ~/.bashrc"
 su $HDFS_USER -c "echo '. /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh' >> ~/.bashrc"
@@ -45,6 +47,9 @@ su $YARN_USER -c "echo '. /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2
 
 su $MAPRED_USER -c "touch ~/.bashrc"
 su $MAPRED_USER -c "echo '. /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh' >> ~/.bashrc"
+
+su vagrant -c "touch ~/.bashrc"
+su vagrant -c "echo '. /vagrant/vagrant/hdp_manual_install_rpm_helper_files-2.0.6.76/env.sh' >> ~/.bashrc"
 
 mkdir -p $DFS_NAME_DIR;
 chown -R $HDFS_USER:$HADOOP_GROUP $DFS_NAME_DIR;
@@ -140,3 +145,17 @@ su $HDFS_USER -c "hadoop fs -chown -R $MAPRED_USER:$HDFS_USER /"
 
 su $MAPRED_USER -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/"
 su $MAPRED_USER -c "/usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver"
+
+##time for maven and camus
+cd /tmp
+wget http://apache.spinellicreations.com/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz
+mkdir -p /opt/apache
+cd /opt/apache/
+tar -xvf /tmp/apache-maven-3.1.1-bin.tar.gz
+export PATH=/opt/apache/apache-maven-3.1.1/bin:$PATH
+su vagrant -c "echo 'export PATH=/opt/apache/apache-maven-3.1.1/bin:$PATH' >> ~/.bashrc"
+mkdir -p /opt/github/linkedin
+cd /opt/github/linkedin
+git clone https://github.com/linkedin/camus.git
+cd /opt/github/linkedin/camus
+mvn clean package
